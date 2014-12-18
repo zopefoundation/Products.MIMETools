@@ -29,6 +29,7 @@ setup(name='Products.MIMETools',
       package_dir={'': 'src'},
       install_requires=[
         'setuptools',
+        'ExtensionClass>=4.1a1',
         'DocumentTemplate',
       ],
       include_package_data=True,
