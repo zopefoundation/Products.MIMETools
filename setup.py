@@ -17,7 +17,7 @@ from setuptools import setup
 
 
 setup(name='Products.MIMETools',
-      version='3.0.dev0',
+      version='3.0',
       url='https://github.com/zopefoundation/Products.MIMETools',
       project_urls={
         'Issue Tracker': ('https://github.com/zopefoundation'
