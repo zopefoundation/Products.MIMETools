@@ -1,6 +1,10 @@
 Changelog
 =========
 
+3.1 (unreleased)
+----------------
+
+
 3.0 (2019-05-20)
 ----------------
 - Reimplemented using Python's ``email`` module
