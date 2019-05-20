@@ -11,31 +11,57 @@
 #
 ##############################################################################
 
-from cStringIO import StringIO
-import mimetools
+from email.encoders import encode_7or8bit
+from email.encoders import encode_base64
+from email.encoders import encode_quopri
+from email.mime.application import MIMEApplication
+from email.mime.audio import MIMEAudio
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from io import BytesIO
+from io import StringIO
 
-from DocumentTemplate.DT_Util import Eval
-from DocumentTemplate.DT_Util import parse_params
-from DocumentTemplate.DT_Util import ParseError
-from DocumentTemplate.DT_Util import render_blocks
+import six
+
 from DocumentTemplate.DT_String import String
+from DocumentTemplate.DT_Util import Eval
+from DocumentTemplate.DT_Util import ParseError
+from DocumentTemplate.DT_Util import parse_params
+from DocumentTemplate.DT_Util import render_blocks
+
+
+if six.PY2:
+    outfile = BytesIO
+else:
+    outfile = StringIO
+TYPE_CLASSES = {
+    'text': MIMEText,
+    'image': MIMEImage,
+    'audio': MIMEAudio,
+    'application': MIMEApplication,
+}
+ENCODINGS = {
+    '7bit': encode_7or8bit,
+    '8bit': encode_7or8bit,
+    'base64': encode_base64,
+    'quoted-printable': encode_quopri,
+}
 
 
 class MIMEError(Exception):
     """MIME Tag Error"""
 
-ENCODINGS = ('base64', 'quoted-printable', 'uuencode', 'x-uuencode', 'uue',
-             'x-uue', '7bit')
-
 
 class MIMETag(object):
-    ''''''
+    """ The dtml-mime tag """
 
-    name='mime'
-    blockContinuations=('boundary', )
-    encode=None
+    name = 'mime'
+    blockContinuations = ('boundary',)
+    encode = None
 
-    def __init__(self, blocks):
+    def __init__(self, blocks, encoding=None):
+        self.encoding = encoding
         self.sections = []
         self.multipart = 'mixed'
 
@@ -61,30 +87,29 @@ class MIMETag(object):
 
             if 'type_expr' in args:
                 if 'type' in args:
-                    raise ParseError(_tm('type and type_expr given', 'mime'))
+                    raise ParseError('dtml-mime: type and type_expr given')
                 args['type_expr'] = Eval(args['type_expr'])
             elif 'type' not in args:
-                args['type']='application/octet-stream'
+                args['type'] = 'application/octet-stream'
 
             if 'disposition_expr' in args:
                 if 'disposition' in args:
                     raise ParseError(
-                        _tm('disposition and disposition_expr given', 'mime'))
+                        'dtml-mime: disposition and disposition_expr given')
                 args['disposition_expr'] = Eval(args['disposition_expr'])
             elif 'disposition' not in args:
                 args['disposition'] = ''
 
             if 'encode_expr' in args:
                 if 'encode' in args:
-                    raise ParseError(
-                        _tm('encode and encode_expr given', 'mime'))
+                    raise ParseError('dtml-mime: encode and encode_expr given')
                 args['encode_expr'] = Eval(args['encode_expr'])
             elif 'encode' not in args:
                 args['encode'] = 'base64'
 
             if 'name_expr' in args:
                 if 'name' in args:
-                    raise ParseError(_tm('name and name_expr given', 'mime'))
+                    raise ParseError('dtml-mime: name and name_expr given')
                 args['name_expr'] = Eval(args['name_expr'])
             elif 'name' not in args:
                 args['name'] = ''
@@ -92,14 +117,14 @@ class MIMETag(object):
             if 'filename_expr' in args:
                 if 'filename' in args:
                     raise ParseError(
-                        _tm('filename and filename_expr given', 'mime'))
+                        'dtml-mime: filename and filename_expr given')
                 args['filename_expr'] = Eval(args['filename_expr'])
             elif 'filename' not in args:
                 args['filename'] = ''
 
             if 'cid_expr' in args:
                 if 'cid' in args:
-                    raise ParseError(_tm('cid and cid_expr given', 'mime'))
+                    raise ParseError('dtml-mime: cid and cid_expr given')
                 args['cid_expr'] = Eval(args['cid_expr'])
             elif 'cid' not in args:
                 args['cid'] = ''
@@ -107,10 +132,10 @@ class MIMETag(object):
             if 'charset_expr' in args:
                 if 'charset' in args:
                     raise ParseError(
-                        _tm('charset and charset_expr given', 'mime'))
+                        'dtml-mime: charset and charset_expr given')
                 args['charset_expr'] = Eval(args['charset_expr'])
             elif 'charset' not in args:
-                args['charset'] = ''
+                args['charset'] = 'us-ascii'  # Default for text parts
 
             if 'skip_expr' in args:
                 args['skip_expr'] = Eval(args['skip_expr'])
@@ -121,95 +146,70 @@ class MIMETag(object):
             self.sections.append((args, section.blocks))
 
     def render(self, md):
-        from MimeWriter import MimeWriter # deprecated since Python 2.3!
-        IO = StringIO()
-        IO.write("Mime-Version: 1.0\n")
-        mw = MimeWriter(IO)
-        outer = mw.startmultipartbody(self.multipart)
+        outer = MIMEMultipart(self.multipart)
 
-        last = None
-        for x in self.sections:
-            a, b = x
-            if 'skip_expr' in a and a['skip_expr'].eval(md):
+        for (args, blocks) in self.sections:
+            if 'skip_expr' in args and args['skip_expr'].eval(md):
                 continue
 
-            inner = mw.nextpart()
-
-            if 'type_expr' in a:
-                t = a['type_expr'].eval(md)
+            if 'type_expr' in args:
+                typ = args['type_expr'].eval(md)
             else:
-                t = a['type']
+                typ = args['type']
 
-            if 'disposition_expr' in a:
-                d = a['disposition_expr'].eval(md)
+            if 'disposition_expr' in args:
+                disposition = args['disposition_expr'].eval(md)
             else:
-                d = a['disposition']
+                disposition = args['disposition']
 
-            if 'encode_expr' in a:
-                e = a['encode_expr'].eval(md)
+            if 'encode_expr' in args:
+                encode = args['encode_expr'].eval(md)
             else:
-                e = a['encode']
+                encode = args['encode']
 
-            if 'name_expr' in a:
-                n = a['name_expr'].eval(md)
+            if 'filename_expr' in args:
+                filename = args['filename_expr'].eval(md)
             else:
-                n = a['name']
+                filename = args['filename']
 
-            if 'filename_expr' in a:
-                f = a['filename_expr'].eval(md)
+            if 'cid_expr' in args:
+                cid = args['cid_expr'].eval(md)
             else:
-                f = a['filename']
+                cid = args['cid']
 
-            if 'cid_expr' in a:
-                cid = a['cid_expr'].eval(md)
+            if 'charset_expr' in args:
+                charset = args['charset_expr'].eval(md)
             else:
-                cid = a['cid']
+                charset = args['charset']
 
-            if 'charset_expr' in a:
-                charset = a['charset_expr'].eval(md)
+            maintype, subtype = [x.lower() for x in typ.split('/')]
+            if maintype not in TYPE_CLASSES:
+                maintype = 'application'
+                subtype = 'octet-stream'
+
+            klass = TYPE_CLASSES.get(maintype, MIMEApplication)
+            data = render_blocks(blocks, md)
+
+            if maintype == 'text':
+                inner = klass(data, _subtype=subtype, _charset=charset)
             else:
-                charset = a['charset']
-
-            if d:
-                if f:
-                    inner.addheader('Content-Disposition',
-                                    '%s;\n filename="%s"' % (d, f))
-                else:
-                    inner.addheader('Content-Disposition', d)
-
-            inner.addheader('Content-Transfer-Encoding', e)
+                inner = klass(data, _subtype=subtype,
+                              _encoder=ENCODINGS.get(encode))
 
             if cid:
-                inner.addheader('Content-ID', '<%s>' % cid)
+                inner.add_header('Content-ID', '<%s>' % cid)
 
-            if n:
-                plist = [('name', n)]
-            else:
-                plist = []
+            if disposition:
+                if filename:
+                    inner.add_header('Content-Disposition',
+                                     '%s;\n filename="%s"' % (disposition,
+                                                              filename))
+                else:
+                    inner.add_header('Content-Disposition', disposition)
 
-            if t.startswith('text/'):
-                plist.append(('charset', charset or 'us-ascii'))
+            outer.attach(inner)
 
-            innerfile = inner.startbody(t, plist, 1)
-
-            output = StringIO()
-            if e == '7bit':
-                innerfile.write(render_blocks(b, md))
-            else:
-                mimetools.encode(StringIO(render_blocks(b, md)),
-                                 output, e)
-                output.seek(0)
-                innerfile.write(output.read())
-
-            last = x
-
-        # XXX what if self.sections is empty ??? does it matter that
-        # mw.lastpart() is called right after mw.startmultipartbody() ?
-        if last is not None and last is self.sections[-1]:
-            mw.lastpart()
-
-        outer.seek(0)
-        return outer.read()
+        return outer.as_string()
 
     __call__ = render
 

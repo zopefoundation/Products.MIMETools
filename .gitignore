@@ -8,7 +8,10 @@ parts
 *.pyc
 *.pyo
 *.so
+.coverage*
 .installed.cfg
+default.profraw
 develop-eggs/
 eggs/
 *.egg-info/
+.tox/
