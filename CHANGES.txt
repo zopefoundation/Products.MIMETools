@@ -3,6 +3,7 @@ Changelog
 
 3.1 (unreleased)
 ----------------
+- Fix linting
 
 
 3.0 (2019-05-20)
