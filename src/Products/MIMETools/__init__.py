@@ -11,4 +11,4 @@
 #
 ##############################################################################
 
-from . import MIMETag  # NOQA: flake8: F401
+from . import MIMETag  # noqa: F401
