@@ -13,5 +13,6 @@ parts
 default.profraw
 develop-eggs/
 eggs/
+pyvenv.cfg
 *.egg-info/
 .tox/
