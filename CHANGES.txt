@@ -5,6 +5,8 @@ Changelog
 ----------------
 - Fix linting
 
+- Change some imports to prevent DeprecationWarnings
+
 
 3.0 (2019-05-20)
 ----------------

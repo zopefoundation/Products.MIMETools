@@ -24,11 +24,11 @@ from io import StringIO
 
 import six
 
+from DocumentTemplate._DocumentTemplate import render_blocks
 from DocumentTemplate.DT_String import String
 from DocumentTemplate.DT_Util import Eval
 from DocumentTemplate.DT_Util import ParseError
 from DocumentTemplate.DT_Util import parse_params
-from DocumentTemplate.DT_Util import render_blocks
 
 
 if six.PY2:
