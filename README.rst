@@ -1,3 +1,17 @@
+.. image:: https://github.com/zopefoundation/Products.MIMETools/actions/workflows/tests.yml/badge.svg
+        :target: https://github.com/zopefoundation/Products.MIMETools/actions/workflows/tests.yml
+
+.. image:: https://coveralls.io/repos/github/zopefoundation/Products.MIMETools/badge.svg
+        :target: https://coveralls.io/github/zopefoundation/Products.MIMETools
+
+.. image:: https://img.shields.io/pypi/v/Products.MIMETools.svg
+        :target: https://pypi.org/project/Products.MIMETools/
+        :alt: Current version on PyPI
+
+.. image:: https://img.shields.io/pypi/pyversions/Products.MIMETools.svg
+        :target: https://pypi.org/project/Products.MIMETools/
+        :alt: Supported Python versions
+
 Products.MIMETools
 ==================
 
