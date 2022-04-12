@@ -3,35 +3,35 @@ Changelog
 
 3.3 (unreleased)
 ----------------
-
+- Add support for Python 3.10.
 
 3.2 (2021-03-16)
 ----------------
-- Add support for Python 3.9
+- Add support for Python 3.9.
 
 
 3.1 (2020-02-11)
 ----------------
-- Fix linting
+- Fix linting.
 
-- Change some imports to prevent DeprecationWarnings
+- Change some imports to prevent DeprecationWarnings.
 
 
 3.0 (2019-05-20)
 ----------------
-- Reimplemented using Python's ``email`` module
+- Reimplemented using Python's ``email`` module.
 
-- Added support for Python 3.5, 3.6, 3.7 and 3.8
+- Added support for Python 3.5, 3.6, 3.7 and 3.8.
 
-- Switched documentation to standard ``dtml`` notation
+- Switched documentation to standard ``dtml`` notation.
 
-- Added ``tox`` testing configuration
+- Added ``tox`` testing configuration.
 
-- Full linting
+- Full linting.
 
-- Boosted test coverage to over 90%
+- Boosted test coverage to over 90%.
 
-- Compatible with DocumentTemplate 3.x and Zope 4
+- Compatible with DocumentTemplate 3.x and Zope 4.
 
 
 2.13.0 (2010-07-10)
