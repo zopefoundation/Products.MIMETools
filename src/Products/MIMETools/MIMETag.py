@@ -19,10 +19,7 @@ from email.mime.audio import MIMEAudio
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from io import BytesIO
 from io import StringIO
-
-import six
 
 from DocumentTemplate._DocumentTemplate import render_blocks
 from DocumentTemplate.DT_String import String
@@ -31,10 +28,7 @@ from DocumentTemplate.DT_Util import ParseError
 from DocumentTemplate.DT_Util import parse_params
 
 
-if six.PY2:
-    outfile = BytesIO
-else:
-    outfile = StringIO
+outfile = StringIO
 TYPE_CLASSES = {
     'text': MIMEText,
     'image': MIMEImage,
@@ -53,7 +47,7 @@ class MIMEError(Exception):
     """MIME Tag Error"""
 
 
-class MIMETag(object):
+class MIMETag:
     """ The dtml-mime tag """
 
     name = 'mime'
@@ -182,7 +176,7 @@ class MIMETag(object):
             else:
                 charset = args['charset']
 
-            maintype, subtype = [x.lower() for x in typ.split('/')]
+            maintype, subtype = (x.lower() for x in typ.split('/'))
             if maintype not in TYPE_CLASSES:
                 maintype = 'application'
                 subtype = 'octet-stream'
@@ -202,8 +196,7 @@ class MIMETag(object):
             if disposition:
                 if filename:
                     inner.add_header('Content-Disposition',
-                                     '%s;\n filename="%s"' % (disposition,
-                                                              filename))
+                                     f'{disposition};\n filename="{filename}"')
                 else:
                     inner.add_header('Content-Disposition', disposition)
 

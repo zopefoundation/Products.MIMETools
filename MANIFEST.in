@@ -7,4 +7,3 @@ include buildout.cfg
 include tox.ini
 
 recursive-include src *.py
-include buildout4.cfg
