@@ -15,8 +15,6 @@ import base64
 import email
 import unittest
 
-import six
-
 from DocumentTemplate.DT_Util import ParseError
 
 
@@ -31,7 +29,7 @@ class MimeTest(unittest.TestCase):
         return klass(blocks)
 
     def _decode64(self, text):
-        if six.PY3 and isinstance(text, str):
+        if isinstance(text, str):
             text = text.encode('utf-8')
         try:
             return base64.decodebytes(text)
@@ -217,5 +215,5 @@ class MimeTest(unittest.TestCase):
 
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(MimeTest))
+    suite.addTest(unittest.defaultTestLoader.loadTestsFromTestCase(MimeTest))
     return suite
