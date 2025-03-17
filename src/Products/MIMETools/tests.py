@@ -44,8 +44,8 @@ class MimeTest(unittest.TestCase):
     def test_registered(self):
         klass = self._getTargetClass()
         from DocumentTemplate.DT_String import String
-        self.assertTrue('mime' in String.commands)
-        self.assertTrue(String.commands['mime'] is klass)
+        self.assertIn('mime', String.commands)
+        self.assertIs(String.commands['mime'], klass)
 
     def test_init(self):
         tag = self._makeOne()
