@@ -16,7 +16,7 @@ from setuptools import setup
 
 
 setup(name='Products.MIMETools',
-      version='5.0.dev0',
+      version='5.0',
       url='https://github.com/zopefoundation/Products.MIMETools',
       project_urls={
           'Issue Tracker': ('https://github.com/zopefoundation'
@@ -51,4 +51,5 @@ setup(name='Products.MIMETools',
           'ExtensionClass>=4.1a1',
           'DocumentTemplate>=3',
       ],
+      include_package_data=True,
       )
